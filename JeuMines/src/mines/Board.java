@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 public class Board extends JPanel {
 	private static final long serialVersionUID = 6195235521361212179L;
 	
-	static private final int numImages = 13;
+	static private final int numImages1 = 13;
     static private final int cellSize = 15;
 
   static private final int coverForCell = 10;
@@ -32,7 +32,7 @@ public class Board extends JPanel {
     private int[] field;
     private boolean inGame;
     private int minesLeft;
-    private Image[] img;
+    private Image[] img11;
     private int mines = 40;
     private int rows = 16;
     private int cols = 16;
@@ -40,9 +40,9 @@ public class Board extends JPanel {
     private JLabel statusbar;
 
 
-    private JLabel statusbar; // Barre d'état pour afficher les informations
-private static final int NUM_IMAGES = 10; // Nombre total d'images, ajuster si nécessaire
-private Image[] img; // Tableau d'images
+    private JLabel statusbar1; // Barre d'état pour afficher les informations
+private static final int  numImages= 10; // Nombre total d'images, ajuster si nécessaire
+private Image[] img1; // Tableau d'images
 
 public Board(JLabel statusbar) {
     this.statusbar = statusbar; // Initialisation de la barre d'état
@@ -52,10 +52,10 @@ public Board(JLabel statusbar) {
 
 // Initialise les images à partir des fichiers GIF
 private void initializeImages() {
-    img = new Image[NUM_IMAGES]; // Crée le tableau d'images avec la taille spécifiée
-    for (int i = 0; i < NUM_IMAGES; i++) {
+    img11 = new Image[numImages1]; // Crée le tableau d'images avec la taille spécifiée
+    for (int i = 0; i < numImages1; i++) {
         String imagePath = String.format("%d.gif", i); // Chemin de l'image basé sur l'index
-        img[i] = loadImage(imagePath); // Charge l'image à partir du fichier et l'ajoute au tableau
+        img11[i] = loadImage(imagePath); // Charge l'image à partir du fichier et l'ajoute au tableau
     }
 }
 
@@ -90,7 +90,7 @@ field = new int[allCells];
 
 for (i = 0; i < allCells; i++)
     field[i] = coverForCell;
-statusbar.setText(Integer.toString(mineLeft));
+statusbar.setText(Integer.toString(minesLeft));
 i = 0;
 while (i < mines) {
     position = random.nextInt(allCells);
@@ -173,8 +173,85 @@ private void checkAdjacentCell(int currentCell, int adjacentCell) {
 
 // Vérifie si une cellule est valide (dans les limites du tableau)
 private boolean isCellValid(int cell) {
-    return cell >=0 && cell < allCells;
+    return cell >= 0 && cell < allCells;
+}
 
+public void paint11(Graphics g) {
+    int cell = 0;
+    int uncover = 0;
+
+    // Parcours des cellules
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            int index = (i * cols) + j;
+            cell = field[index];
+
+            // Gestion de l'état de la cellule
+            handleCellState1(cell);
+
+            if (inGame) {
+                // En jeu
+                if (cell > coveredMineCell) {
+                    cell = drawMark;
+                } else if (cell > mineCell) {
+                    cell = drawCover;
+                    uncover++;
+                }
+            } else {
+                // Fin de partie
+                handleEndGameState1(cell);
+            }
+
+            g.drawImage(img11[cell], (j * cellSize), (i * cellSize), this);
+        }
+    }
+
+    // Mise à jour de la barre de statut
+    updateStatusbar1(uncover);
+}
+
+private void handleCellState1(int cell) {
+    // Gestion de l'état de la cellule lorsque le jeu est en cours
+    if (!inGame) {
+        if (cell == coveredMineCell) {
+            cell = drawMine;
+        } else if (cell == markedMineCell) {
+            cell = drawMark;
+        } else if (cell > coveredMineCell) {
+            cell = drawWrongMark;
+        } else if (cell > mineCell) {
+            cell = drawCover;
+        }
+    } else {
+        // Gestion de l'état de la cellule lorsqu'il s'agit d'une mine
+        if (cell == mineCell) {
+            inGame = false;
+        }
+    }
+}
+
+private void handleEndGameState1(int cell) {
+    // Gestion de l'état de la cellule à la fin de la partie
+    if (cell == coveredMineCell) {
+        cell = drawMine;
+    } else if (cell == markedMineCell) {
+        cell = drawMark;
+    } else if (cell > coveredMineCell) {
+        cell = drawWrongMark;
+    } else if (cell > mineCell) {
+        cell = drawCover;
+    }
+}
+
+private void updateStatusbar1(int uncover) {
+    // Mise à jour de la barre de statut en fonction du nombre de cellules non découvertes
+    if (uncover == 0 && inGame) {
+        inGame = false;
+        statusbar.setText("Game won");
+    } else if (!inGame) {
+        statusbar.setText("Game lost");
+    }
+}
 @Override
 public void paint(Graphics g) {
     int cell = 0;
@@ -187,7 +264,7 @@ public void paint(Graphics g) {
             cell = field[index];
 
             // Gestion de l'état de la cellule
-            handleCellState(cell);
+            handleCellState1(cell);
 
             if (inGame) {
                 // En jeu
@@ -199,15 +276,15 @@ public void paint(Graphics g) {
                 }
             } else {
                 // Fin de partie
-                handleEndGameState(cell);
+                handleEndGameState1(cell);
             }
 
-            g.drawImage(img[cell], (j * cellSize), (i * cellSize), this);
+            g.drawImage(img11[cell], (j * cellSize), (i * cellSize), this);
         }
     }
 
     // Mise à jour de la barre de statut
-    updateStatusbar(uncover);
+    updateStatusbar1(uncover);
 }
 
 private void handleCellState(int cell) {
@@ -252,86 +329,9 @@ private void updateStatusbar(int uncover) {
         statusbar.setText("Game lost");
     }
 }
-@Override
-public void paint(Graphics g) {
-    int cell = 0;
-    int uncover = 0;
-
-    // Parcours des cellules
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            int index = (i * cols) + j;
-            cell = field[index];
-
-            // Gestion de l'état de la cellule
-            handleCellState(cell);
-
-            if (inGame) {
-                // En jeu
-                if (cell > coveredMineCell) {
-                    cell = drawMark;
-                } else if (cell > mineCell) {
-                    cell = drawCover;
-                    uncover++;
-                }
-            } else {
-                // Fin de partie
-                handleEndGameState(cell);
-            }
-
-            g.drawImage(img[cell], (j * cellSize), (i * cellSize), this);
-        }
-    }
-
-    // Mise à jour de la barre de statut
-    updateStatusbar(uncover);
-}
-
-private void handleCellState(int cell) {
-    // Gestion de l'état de la cellule lorsque le jeu est en cours
-    if (!inGame) {
-        if (cell == coveredMineCell) {
-            cell = drawMine;
-        } else if (cell == markedMineCell) {
-            cell = drawMark;
-        } else if (cell > coveredMineCell) {
-            cell = drawWrongMark;
-        } else if (cell > mineCell) {
-            cell = drawCover;
-        }
-    } else {
-        // Gestion de l'état de la cellule lorsqu'il s'agit d'une mine
-        if (cell == mineCell) {
-            inGame = false;
-        }
-    }
-}
-
-private void handleEndGameState(int cell) {
-    // Gestion de l'état de la cellule à la fin de la partie
-    if (cell == coveredMineCell) {
-        cell = drawMine;
-    } else if (cell == markedMineCell) {
-        cell = drawMark;
-    } else if (cell > coveredMineCell) {
-        cell = drawWrongMark;
-    } else if (cell > mineCell) {
-        cell = drawCover;
-    }
-}
-
-private void updateStatusbar(int uncover) {
-    // Mise à jour de la barre de statut en fonction du nombre de cellules non découvertes
-    if (uncover == 0 && inGame) {
-        inGame = false;
-        statusbar.setText("Game won");
-    } else if (!inGame) {
-        statusbar.setText("Game lost");
-    }
-}
 
 
-@override
+
   class MinesAdapter extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
         int x = e.getX();
@@ -359,18 +359,18 @@ private void updateStatusbar(int uncover) {
 
                     if (field[(cRow * cols) + cCol] <= coveredMineCell) {
                         // Marquer une cellule
-                        if (mines_left > 0) {
+                        if (minesLeft > 0) {
                             field[(cRow * cols) + cCol] += markForCell;
-                            mines_left--;
-                            statusbar.setText(Integer.toString(mines_left));
+                            minesLeft--;
+                            statusbar.setText(Integer.toString(minesLeft));
                         } else {
                             statusbar.setText("No marks left");
                         }
                     } else {
                         // Démarquer une cellule
                         field[(cRow * cols) + cCol] -= markForCell;
-                        mines_left++;
-                        statusbar.setText(Integer.toString(mines_left));
+                        minesLeft++;
+                        statusbar.setText(Integer.toString(minesLeft));
                     }
                 }
 
@@ -400,4 +400,5 @@ private void updateStatusbar(int uncover) {
             }
         }
     }
+}
 }
