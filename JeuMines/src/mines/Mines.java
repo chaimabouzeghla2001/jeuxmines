@@ -4,21 +4,23 @@ import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-
-// Source: http://zetcode.com/tutorials/javagamestutorial/minesweeper/
+import javax.swing.WindowConstants;
 
 public class Mines extends JFrame {
 	private static final long serialVersionUID = 4772165125287256837L;
 	
-	private final int WIDTH = 250;
-    private final int HEIGHT = 290;
+	private static final int width = 250;
+    private static final int height = 290;
 
     private JLabel statusbar;
     
+    /**
+     * Constructeur de la classe Mines.
+     * Initialise la fenêtre principale du jeu.
+     */
     public Mines() {
-
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(WIDTH, HEIGHT);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setSize(width, height);
         setLocationRelativeTo(null);
         setTitle("Minesweeper");
 
@@ -31,6 +33,10 @@ public class Mines extends JFrame {
         setVisible(true);
     }
     
+    /**
+     * Point d'entrée de l'application.
+     * Crée une instance de la classe Mines pour démarrer le jeu.
+     */
     public static void main(String[] args) {
         new Mines();
     }
