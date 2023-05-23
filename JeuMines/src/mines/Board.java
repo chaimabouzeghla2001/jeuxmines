@@ -61,7 +61,7 @@ public class Board extends JPanel {
 
     public void newGame() {
 
-        Random random;
+        Random random = new Random();
         int current_col;
 
         int i = 0;
@@ -220,15 +220,20 @@ public class Board extends JPanel {
         int uncover = 0;
 
 
+     // Boucle sur toutes les lignes et colonnes
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-
+                
+                // Obtenir la valeur de la cellule pour la ligne et la colonne actuelles
                 cell = field[(i * cols) + j];
-
+                
+                // Vï¿½rifiez si le jeu est terminï¿½ et que la cellule actuelle est une mine
                 if (inGame && cell == MINE_CELL)
                     inGame = false;
-
+                
+                // Vï¿½rifiez si le jeu est terminï¿½
                 if (!inGame) {
+                    // Dï¿½finir la cellule sur l'image correspondante
                     if (cell == COVERED_MINE_CELL) {
                         cell = DRAW_MINE;
                     } else if (cell == MARKED_MINE_CELL) {
@@ -238,9 +243,8 @@ public class Board extends JPanel {
                     } else if (cell > MINE_CELL) {
                         cell = DRAW_COVER;
                     }
-
-
                 } else {
+                    // Si le jeu n'est pas terminï¿½
                     if (cell > COVERED_MINE_CELL)
                         cell = DRAW_MARK;
                     else if (cell > MINE_CELL) {
@@ -248,85 +252,100 @@ public class Board extends JPanel {
                         uncover++;
                     }
                 }
-
-                g.drawImage(img[cell], (j * CELL_SIZE),
-                    (i * CELL_SIZE), this);
+                
+                // Dessinez l'image correspondante pour la cellule
+                g.drawImage(img[cell], (j * CELL_SIZE), (i * CELL_SIZE), this);
             }
         }
 
-
+        // Vï¿½rifiez si le jeu est gagnï¿½ ou perdu
         if (uncover == 0 && inGame) {
             inGame = false;
             statusbar.setText("Game won");
         } else if (!inGame)
             statusbar.setText("Game lost");
+
     }
 
 
     class MinesAdapter extends MouseAdapter {
-	@Override
-        public void mousePressed(MouseEvent e) {
+    	// Remplacer la mï¿½thode pour gï¿½rer l'ï¿½vï¿½nement d'appui sur la souris
+    	@Override
+    	public void mousePressed(MouseEvent e) {
 
-            int x = e.getX();
-            int y = e.getY();
+    	    // Obtenir la position X et Y du clic de souris
+    	    int x = e.getX();
+    	    int y = e.getY();
 
-            int cCol = x / CELL_SIZE;
-            int cRow = y / CELL_SIZE;
+    	    //Calculer la colonne et la ligne de la cellule cliquï¿½e
+    	    int cCol = x / CELL_SIZE;
+    	    int cRow = y / CELL_SIZE;
 
-            boolean rep = false;
+    	    // Dï¿½finir un indicateur pour indiquer si un repaint est nï¿½cessaire
+    	    boolean rep = false;
 
+    	    // Vï¿½rifiez si le jeu n'est pas encore dï¿½marrï¿½
+    	    if (!inGame) {
+    	        newGame();
+    	        repaint();
+    	    }
 
-            if (!inGame) {
-                newGame();
-                repaint();
-            }
+    	    // Vï¿½rifiez si le clic ï¿½tait dans le plateau de jeu
+    	    if ((x < cols * CELL_SIZE) && (y < rows * CELL_SIZE)) {
 
+    	        // Vï¿½rifiez si le bouton droit de la souris a ï¿½tï¿½ cliquï¿½
+    	        if (e.getButton() == MouseEvent.BUTTON3) {
 
-            if ((x < cols * CELL_SIZE) && (y < rows * CELL_SIZE)) {
+    	            // Vï¿½rifiez si la cellule contient une mine ou une marque
+    	            if (field[(cRow * cols) + cCol] > MINE_CELL) {
+    	                rep = true;
 
-                if (e.getButton() == MouseEvent.BUTTON3) {
+    	                // Vï¿½rifiez si la cellule est couverte et s'il reste des marques
+    	                if (field[(cRow * cols) + cCol] <= COVERED_MINE_CELL) {
+    	                    if (minesLeft > 0) {
+    	                        field[(cRow * cols) + cCol] += MARK_FOR_CELL;
+    	                        minesLeft--;
+    	                        statusbar.setText(Integer.toString(minesLeft));
+    	                    } else {
+    	                        statusbar.setText("No marks left");
+    	                    }
+    	                } else {
+    	                    // Dï¿½cochez la cellule et incrï¿½mentez les marques restantes
+    	                    field[(cRow * cols) + cCol] -= MARK_FOR_CELL;
+    	                    minesLeft++;
+    	                    statusbar.setText(Integer.toString(minesLeft));
+    	                }
+    	            }
 
-                    if (field[(cRow * cols) + cCol] > MINE_CELL) {
-                        rep = true;
+    	        } else {
+    	            // Vï¿½rifiez si la cellule n'est pas couverte
+    	            if (field[(cRow * cols) + cCol] > COVERED_MINE_CELL) {
+    	                return;
+    	            }
 
-                        if (field[(cRow * cols) + cCol] <= COVERED_MINE_CELL) {
-                            if (mines_left > 0) {
-                                field[(cRow * cols) + cCol] += MARK_FOR_CELL;
-                                mines_left--;
-                                statusbar.setText(Integer.toString(mines_left));
-                            } else
-                                statusbar.setText("No marks left");
-                        } else {
+    	            // Vï¿½rifiez si la cellule contient une mine ou un numï¿½ro
+    	            if ((field[(cRow * cols) + cCol] > MINE_CELL) &&
+    	                (field[(cRow * cols) + cCol] < MARKED_MINE_CELL)) {
 
-                            field[(cRow * cols) + cCol] -= MARK_FOR_CELL;
-                            mines_left++;
-                            statusbar.setText(Integer.toString(mines_left));
-                        }
-                    }
+    	                // Dï¿½couvrez la cellule et dï¿½finissez le drapeau de repeinture
+    	                field[(cRow * cols) + cCol] -= COVER_FOR_CELL;
+    	                rep = true;
 
-                } else {
+    	                // Vï¿½rifiez si la cellule contient une mine ou est vide
+    	                if (field[(cRow * cols) + cCol] == MINE_CELL) {
+    	                    inGame = false;
+    	                }
+    	                if (field[(cRow * cols) + cCol] == EMPTY_CELL) {
+    	                    find_empty_cells((cRow * cols) + cCol);
+    	                }
+    	            }
+    	        }
 
-                    if (field[(cRow * cols) + cCol] > COVERED_MINE_CELL) {
-                        return;
-                    }
-
-                    if ((field[(cRow * cols) + cCol] > MINE_CELL) &&
-                        (field[(cRow * cols) + cCol] < MARKED_MINE_CELL)) {
-
-                        field[(cRow * cols) + cCol] -= COVER_FOR_CELL;
-                        rep = true;
-
-                        if (field[(cRow * cols) + cCol] == MINE_CELL)
-                            inGame = false;
-                        if (field[(cRow * cols) + cCol] == EMPTY_CELL)
-                            find_empty_cells((cRow * cols) + cCol);
-                    }
-                }
-
-                if (rep)
-                    repaint();
-
-            }
-        }
-    }
-}
+    	        // Repeindre le plateau de jeu si besoin
+    	        if (rep) {
+    	            repaint();
+    	        }
+    	    }
+    	}
+ 
+}}
